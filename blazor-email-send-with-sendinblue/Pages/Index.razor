@@ -1,0 +1,50 @@
+﻿@page "/"
+@using System.Text;
+@using Newtonsoft.Json;
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<SurveyPrompt Title="How is Blazor working for you?" />
+
+
+
+
+<p role="status">Email Send Status: @sendStatus</p>
+
+<button class="btn btn-primary" @onclick="SendEmail">Email Send</button>
+
+@code {
+    private string sendStatus = "";
+
+    private async void SendEmail()
+    {
+        var apiKey = "YOUR_API_KEY";
+        var client = new HttpClient();
+        client.DefaultRequestHeaders.Add("api-key", apiKey);
+
+        var data = new
+        {
+            to = new[] { new { email = "recipient@example.com" } },
+            sender = new { email = "SENDER_EMAIL" },
+            subject = "Hello Amar",
+            htmlContent = "<p>Hello Amar</p>"
+        };
+
+        var json = JsonConvert.SerializeObject(data);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await client.PostAsync("https://api.sendinblue.com/v3/smtp/email", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            sendStatus="Email sent successfully";
+        }
+        else
+        {
+            sendStatus ="Error sending email: " + await response.Content.ReadAsStringAsync();
+        }
+    }
+}
